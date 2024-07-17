@@ -1,11 +1,7 @@
 import numpy as np
 
-X = [[1.0, 2.0, 3.0, 2.5],
-     [2.0, 5.0, -1.0, 2.0],
-     [-1.5, 2.7, 3.3, -0.8]]
 
-
-class Layer_Dense:
+class LayerDense:
     """Class to represent a layer in a neural network."""
 
     def __init__(self, n_inputs, n_neurons):
@@ -19,7 +15,7 @@ class Layer_Dense:
         self.biases = np.zeros((1, n_neurons))
 
     def forward(self, inputs):
-        """Calculates the output of the layer.
+        """Calculates the outputs of the layer.
 
         Args:
             inputs (np.array): inputs to the layer
@@ -27,10 +23,27 @@ class Layer_Dense:
         self.output = np.dot(inputs, self.weights) + self.biases
 
 
-layer1 = Layer_Dense(4, 5)
-layer2 = Layer_Dense(5, 2)
+class ActivationReLU:
+    """Class to represent the ReLU activation function."""
 
-layer1.forward(X)
-print(layer1.output, '\n')
-layer2.forward(layer1.output)
-print(layer2.output)
+    def forward(self, inputs):
+        """Calculates the output of the ReLU activation function.
+
+        Args:
+            inputs (np.array): inputs to the activation function
+        """
+        self.output = np.maximum(0, inputs)
+
+
+class ActivationSoftmax:
+    """Class to represent the softmax activation function."""
+
+    def forward(self, inputs):
+        """Calculates the output of the softmax activation function.
+
+        Args:
+            inputs (np.array): inputs to the activation function
+        """
+        exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+        probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
+        self.output = probabilities

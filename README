@@ -1,1 +1,8 @@
-My own NEAT Algorithm in python.
+Neural Network from scratch using Python and Numpy
+I'll re-implement some algorithm from scratch as well.
+This project is here to help me to learn how it's working, the parameters... and understand the math behind it.
+
+Sources :
+NNFS Tutorial   - https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
+NNFS Book       - https://nnfs.io/
+Inside ML       - https://inside-machinelearning.com/recall-precision-f1-score/

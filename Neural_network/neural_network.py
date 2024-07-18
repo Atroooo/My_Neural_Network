@@ -47,3 +47,41 @@ class ActivationSoftmax:
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
+
+
+class Loss:
+    """Class to represent the loss function."""
+
+    def calculate(self, output, y):
+        """Calculates the loss between the predicted and true values.
+
+        Args:
+            output (np.array): predicted values
+            y (np.array): true values
+        """
+        sample_losses = self.forward(output, y)
+        data_loss = np.mean(sample_losses)
+        return data_loss
+
+
+class LossCategoricalCrossentropy(Loss):
+    """Class to represent the categorical crossentropy loss function."""
+
+    def forward(self, y_pred, y_true):
+        """Calculates the loss between the predicted and true values.
+
+        Args:
+            y_pred (np.array): predicted values
+            y_true (np.array): true values
+        """
+        samples = len(y_pred)
+        y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
+
+        if len(y_true.shape) == 1:
+            correct_confidences = y_pred_clipped[range(samples), y_true]
+
+        elif len(y_true.shape) == 2:
+            correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
+
+        negative_log_likelihoods = -np.log(correct_confidences)
+        return negative_log_likelihoods

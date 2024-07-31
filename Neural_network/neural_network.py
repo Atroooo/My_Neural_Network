@@ -85,3 +85,18 @@ class LossCategoricalCrossentropy(Loss):
 
         negative_log_likelihoods = -np.log(correct_confidences)
         return negative_log_likelihoods
+
+    def backward(self, dvalues, y_true):
+        """Calculates the gradient of the loss function.
+
+        Args:
+            dvalues (np.array): array of predictions
+            y_true (np.array): array of true values
+        """
+        samples = len(dvalues)
+        labels = len(dvalues[0])
+
+        if len(y_true.shape) == 1:
+            y_true = np.eye(labels)[y_true]
+        self.dinputs = -y_true / dvalues
+        self.dinputs = self.dinputs / samples

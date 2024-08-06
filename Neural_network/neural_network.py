@@ -11,7 +11,7 @@ class LayerDense:
             n_inputs (int): Number of inputs to the layer.
             n_neurons (int): Number of neurons in the layer.
         """
-        self.weights = 0.10 * np.random.randn(n_inputs, n_neurons)
+        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)
         self.biases = np.zeros((1, n_neurons))
 
     def forward(self, inputs):
@@ -72,8 +72,11 @@ class ActivationSoftmax:
         Args:
             inputs (np.array): Inputs to the activation function.
         """
+        self.inputs = inputs
+
         # Get unnormalized probabilities
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+
         # Normalize them for each sample
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
@@ -135,8 +138,7 @@ class LossCategoricalCrossentropy(Loss):
         # Clip both sides to not drag mean towards any value
         y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
 
-        # Probabilities for target values -
-        # only if categorical labels
+        # Probabilities for target values, only if categorical labels
         if len(y_true.shape) == 1:
             correct_confidences = y_pred_clipped[range(samples), y_true]
 
@@ -168,4 +170,49 @@ class LossCategoricalCrossentropy(Loss):
         self.dinputs = -y_true / dvalues
 
         # Normalize gradient
+        self.dinputs = self.dinputs / samples
+
+
+class ActivationSoftmaxLossCategoricalCrossentropy():
+    """Softmax classifier - combined Softmax activation
+        and cross-entropy loss for faster backward step."""
+
+    def __init__(self):
+        """Creates a combined activation and loss function object."""
+        self.activation = ActivationSoftmax()
+        self.loss = LossCategoricalCrossentropy()
+
+    def forward(self, inputs, y_true):
+        """Performs a forward pass of the combined activation and
+            loss function.
+
+        Args:
+            inputs (np.array): Inputs to the model.
+            y_true (np.array): True labels.
+
+        Returns:
+            float: Loss value.
+        """
+        # Output layer's activation function
+        self.activation.forward(inputs)
+        self.output = self.activation.output
+        return self.loss.calculate(self.output, y_true)
+
+    def backward(self, dvalues, y_true):
+        """Performs a backward pass of the combined activation and loss
+            function.
+
+        Args:
+            dvalues (np.array): Gradient of the loss function with respect to
+                the model's output.
+            y_true (np.array): True labels.
+        """
+        samples = len(dvalues)
+        # If labels are one-hot encoded, turn them into discrete values
+        if len(y_true.shape) == 2:
+            y_true = np.argmax(y_true, axis=1)
+
+        self.dinputs = dvalues.copy()
+        # Calculate gradient
+        self.dinputs[range(samples), y_true] -= 1
         self.dinputs = self.dinputs / samples

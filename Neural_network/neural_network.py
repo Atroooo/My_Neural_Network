@@ -216,3 +216,27 @@ class ActivationSoftmaxLossCategoricalCrossentropy():
         # Calculate gradient
         self.dinputs[range(samples), y_true] -= 1
         self.dinputs = self.dinputs / samples
+
+
+class OptimizerSGD:
+    """Stochastic Gradient Descent optimizer."""
+
+    def __init__(self, learning_rate=1.0):
+        """Initializes the optimizer with the given learning rate.
+
+        Args:
+            learning_rate (float, optional): Learning rate of the optimizer.
+                Defaults to 1.0.
+        """
+        self.learning_rate = learning_rate
+
+    def update_params(self, layer):
+        """Updates the weights and biases of a layer.
+
+        Args:
+            layer (np.array): Layer to update.
+        """
+        layer.weights += -self.learning_rate * layer.dweights
+        layer.biases += -self.learning_rate * layer.dbiases
+
+#249

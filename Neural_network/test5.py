@@ -18,7 +18,7 @@ loss_activation = ActivationSoftmaxLossCategoricalCrossentropy()
 # optimizer = OptimizerSGD(0.85)
 # optimizer = OptimizerSGD(decay=1e-2)
 # optimizer = OptimizerSGD(decay=1e-3)
-optimizer = OptimizerSGD(decay=1e-3, momentum=0.5)
+# optimizer = OptimizerSGD(decay=1e-3, momentum=0.5)
 optimizer = OptimizerSGD(decay=1e-3, momentum=0.9)
 
 # Train in loop

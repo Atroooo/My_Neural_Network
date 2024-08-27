@@ -14,7 +14,12 @@ dense2 = LayerDense(64, 3)
 loss_activation = ActivationSoftmaxLossCategoricalCrossentropy()
 
 # Create optimizer
-optimizer = OptimizerSGD()
+# optimizer = OptimizerSGD()
+# optimizer = OptimizerSGD(0.85)
+# optimizer = OptimizerSGD(decay=1e-2)
+# optimizer = OptimizerSGD(decay=1e-3)
+optimizer = OptimizerSGD(decay=1e-3, momentum=0.5)
+optimizer = OptimizerSGD(decay=1e-3, momentum=0.9)
 
 # Train in loop
 for epoch in range(10001):
@@ -26,6 +31,7 @@ for epoch in range(10001):
 
     # Perform a forward pass through second Dense layer
     dense2.forward(activation1.output)
+
     # Perform a forward pass through the activation/loss function
     loss = loss_activation.forward(dense2.output, y)
 
@@ -38,7 +44,8 @@ for epoch in range(10001):
     if not epoch % 100:
         print(f'epoch: {epoch}, ' +
               f'acc: {accuracy:.3f}, ' +
-              f'loss: {loss:.3f}')
+              f'loss: {loss:.3f} ' +
+              f'lr: {optimizer.current_learning_rate}')
 
     # Backward pass
     loss_activation.backward(loss_activation.output, y)
@@ -47,5 +54,7 @@ for epoch in range(10001):
     dense1.backward(activation1.dinputs)
 
     # Update weights and biases
+    optimizer.pre_update_params()
     optimizer.update_params(dense1)
     optimizer.update_params(dense2)
+    optimizer.post_update_params()

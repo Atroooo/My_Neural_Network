@@ -1,7 +1,10 @@
 import nnfs
-from neural_network import LayerDense, ActivationReLU, ActivationSoftmax, \
-     LossCategoricalCrossentropy
+from layer import LayerDense
+from activation_functions import ActivationReLU, ActivationSoftmax
+from loss_functions import LossCategoricalCrossentropy
 from nnfs.datasets import spiral_data
+
+# Test layer, activation function and loss function
 
 print("################## Test 1 ##################\n")
 

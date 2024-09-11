@@ -55,7 +55,9 @@ class LossCategoricalCrossentropy(Loss):
                 the predictions.
             y_true (np.array): True values.
         """
+        # Number of samples
         samples = len(dvalues)
+        # Number of labels in every sample
         labels = len(dvalues[0])
 
         # If labels are sparse, turn them into one-hot vector

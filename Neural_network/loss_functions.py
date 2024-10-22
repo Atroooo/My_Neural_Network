@@ -16,6 +16,37 @@ class Loss:
         data_loss = np.mean(sample_losses)
         return data_loss
 
+    def regularization_loss(self, layer):
+        """Calculates the regularization loss for the layer.
+
+        Args:
+            layer (LayerDense): Layer to calculate the regularization loss for.
+        """
+        # 0 by default
+        regularization_loss = 0
+
+        # L1 regularization - weights
+        if layer.weight_regularizer_l1 > 0:
+            regularization_loss += layer.weight_regularizer_l1 * \
+                np.sum(np.abs(layer.weights))
+
+        # L2 regularization - weights
+        if layer.weight_regularizer_l2 > 0:
+            regularization_loss += layer.weight_regularizer_l2 * \
+                np.sum(layer.weights * layer.weights)
+
+        # L1 regularization - biases
+        if layer.bias_regularizer_l1 > 0:
+            regularization_loss += layer.bias_regularizer_l1 * \
+                np.sum(np.abs(layer.biases))
+
+        # L2 regularization - biases
+        if layer.bias_regularizer_l2 > 0:
+            regularization_loss += layer.bias_regularizer_l2 * \
+                np.sum(layer.biases * layer.biases)
+
+        return regularization_loss
+
 
 class LossCategoricalCrossentropy(Loss):
     """Class to represent the categorical crossentropy loss function."""
@@ -113,5 +144,48 @@ class ActivationSoftmaxLossCategoricalCrossentropy():
         self.dinputs = dvalues.copy()
         # Calculate gradient
         self.dinputs[range(samples), y_true] -= 1
+        # Normalize gradient
+        self.dinputs = self.dinputs / samples
+
+
+class LossBinaryCrossentropy(Loss):
+    """Class to represent the binary crossentropy loss function."""
+
+    def forward(self, y_pred, y_true):
+        """Calculates the binary crossentropy loss between the predicted
+
+        Args:
+            y_pred (np.array): Predicted values.
+            y_true (np.array): True values.
+        """
+        # Clip data to prevent division by 0
+        # Clip both sides to not drag mean towards any value
+        y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
+
+        sample_loss = -(y_true * np.log(y_pred_clipped) +
+                        (1 - y_true) * np.log(1 - y_pred_clipped))
+        sample_loss = np.mean(sample_loss, axis=-1)
+
+        return sample_loss
+
+    def backward(self, dvalues, y_true):
+        """Backpropagates the gradient of the loss function.
+
+        Args:
+            dvalues (np.array): Gradient of the loss function with respect to
+                the model's output.
+            y_true (np.array): True values.
+        """
+        samples = len(dvalues)
+        outputs = len(dvalues[0])
+
+        # Clip data to prevent division by 0
+        # Clip both sides to not drag mean towards any value
+        clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
+
+        # Calculate gradient
+        self.dinputs = -(y_true / clipped_dvalues -
+                         (1 - y_true) / (1 - clipped_dvalues)) / outputs
+
         # Normalize gradient
         self.dinputs = self.dinputs / samples

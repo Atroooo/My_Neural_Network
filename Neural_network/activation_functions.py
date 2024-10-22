@@ -45,7 +45,7 @@ class ActivationSoftmax:
         self.output = probabilities
 
     def backward(self, dvalues):
-        """Calculates the gradient of the softmax activation function.
+        """Backpropagates the gradient of the loss function.
 
         Args:
             dvalues (np.array): Gradient of the loss function with respect to
@@ -67,3 +67,25 @@ class ActivationSoftmax:
             # and add it to the array of sample gradients
             self.dinputs[index] = np.dot(jacobian_matrix,
                                          single_dvalues)
+
+
+class ActivationSigmoid:
+    """Class to represent the sigmoid activation function."""
+
+    def forward(self, inputs):
+        """Take the inputs and apply sigmoid function.
+
+        Args:
+            inputs (np.array): Inputs to the activation function.
+        """
+        self.inputs = inputs
+        self.output = 1 / (1 + np.exp(-inputs))
+
+    def backward(self, dvalues):
+        """Backpropagates the gradient of the loss function.
+
+        Args:
+            dvalues (_type_): _description_
+        """
+        # Derivative - calculates from output of the sigmoid function
+        self.dinputs = dvalues * (1 - self.output) * self.output

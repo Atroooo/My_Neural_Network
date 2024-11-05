@@ -89,3 +89,16 @@ class ActivationSigmoid:
         """
         # Derivative - calculates from output of the sigmoid function
         self.dinputs = dvalues * (1 - self.output) * self.output
+
+
+class ActivationLinear:
+    """Class to represent the linear activation function."""
+
+    # Forward pass
+    def forward(self, inputs):
+        self.inputs = inputs
+        self.output = inputs
+
+    # Backward pass
+    def backward(self, dvalues):
+        self.dinputs = dvalues.copy()

@@ -11,6 +11,9 @@ class Loss:
         Args:
             output (np.array): Predicted values.
             y (np.array): True values.
+
+        Returns:
+            np.array: Loss values.
         """
         sample_losses = self.forward(output, y)
         data_loss = np.mean(sample_losses)
@@ -21,6 +24,9 @@ class Loss:
 
         Args:
             layer (LayerDense): Layer to calculate the regularization loss for.
+
+        Returns:
+            float: Regularization loss.
         """
         # 0 by default
         regularization_loss = 0
@@ -58,6 +64,9 @@ class LossCategoricalCrossentropy(Loss):
         Args:
             y_pred (np.array): Predicted values.
             y_true (np.array): True values.
+
+        Returns:
+            np.array: Loss values.
         """
         samples = len(y_pred)
 
@@ -120,7 +129,7 @@ class ActivationSoftmaxLossCategoricalCrossentropy():
             y_true (np.array): True labels.
 
         Returns:
-            float: Loss value.
+            np.array: Loss value.
         """
         # Output layer's activation function
         self.activation.forward(inputs)
@@ -157,6 +166,9 @@ class LossBinaryCrossentropy(Loss):
         Args:
             y_pred (np.array): Predicted values.
             y_true (np.array): True values.
+
+        Returns:
+            np.array: Loss values.
         """
         # Clip data to prevent division by 0
         # Clip both sides to not drag mean towards any value
@@ -187,5 +199,78 @@ class LossBinaryCrossentropy(Loss):
         self.dinputs = -(y_true / clipped_dvalues -
                          (1 - y_true) / (1 - clipped_dvalues)) / outputs
 
+        # Normalize gradient
+        self.dinputs = self.dinputs / samples
+
+
+class LossMeanSquaredError(Loss):
+    """Class to represent the mean squared error loss function. (L2 loss)"""
+
+    # Forward pass
+    def forward(self, y_pred, y_true):
+        """Calculates the mean squared error loss between the predicted
+            and true values.
+
+        Args:
+            y_pred (np.array): Predicted values.
+            y_true (np.array): True values.
+
+        Returns:
+            np.array: Loss values.
+        """
+        sample_losses = np.mean((y_true - y_pred)**2, axis=-1)
+        return sample_losses
+
+    # Backward pass
+    def backward(self, dvalues, y_true):
+        """Backpropagates the gradient of the loss function.
+
+        Args:
+            dvalues (np.array): Gradient of the loss function with respect to
+                the model's output.
+            y_true (np.array): True values.
+        """
+        samples = len(dvalues)
+        outputs = len(dvalues[0])
+
+        # Gradient on values
+        self.dinputs = -2 * (y_true - dvalues) / outputs
+        # Normalize gradient
+        self.dinputs = self.dinputs / samples
+
+
+class Loss_MeanAbsoluteError(Loss):
+    """Class to represent the mean absolute error loss function. (L1 loss)"""
+
+    # Forward pass
+    def forward(self, y_pred, y_true):
+        """Calculates the mean absolute error loss between the predicted
+
+        Args:
+            y_pred (np.array): Predicted values.
+            y_true (np.array): True values.
+
+        Returns:
+            np.array: Loss values.
+        """
+        # Calculate loss
+        sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
+        # Return losses
+        return sample_losses
+
+    # Backward pass
+    def backward(self, dvalues, y_true):
+        """Backpropagates the gradient of the loss function.
+
+        Args:
+            dvalues (np.array): Gradient of the loss function with respect to
+                the model's output.
+            y_true (np.array): True values.
+        """
+        samples = len(dvalues)
+        outputs = len(dvalues[0])
+
+        # Calculate gradient
+        self.dinputs = np.sign(y_true - dvalues) / outputs
         # Normalize gradient
         self.dinputs = self.dinputs / samples

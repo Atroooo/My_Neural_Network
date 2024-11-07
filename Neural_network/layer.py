@@ -30,11 +30,13 @@ class LayerDense:
         self.bias_regularizer_l1 = bias_regularizer_l1
         self.bias_regularizer_l2 = bias_regularizer_l2
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         """Calculates the outputs of the layer.
 
         Args:
             inputs (np.array): Inputs to the layer.
+            training (bool): Flag indicating whether the model is in
+                training
         """
         self.inputs = inputs
         # Calculate output values from inputs, weights and biases
@@ -79,7 +81,8 @@ class LayerDense:
 
 
 class LayerDropout:
-    """Class to represent a dropout layer in a neural network."""
+    """Class to represent a dropout layer in a neural network.
+    Regularization technique to prevent overfitting by randomly setting"""
 
     def __init__(self, rate):
         """Initializes the dropout layer with a given rate.
@@ -91,14 +94,22 @@ class LayerDropout:
         # of 0.1 we need success rate of 0.9
         self.rate = 1 - rate
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         """Applies dropout to the inputs.
 
         Args:
             inputs (np.array): Inputs to the dropout layer.
+            training (bool): Flag indicating whether the model is in
+                training mode.
         """
         # Save input values
         self.inputs = inputs
+
+        # If not in the training mode - return values
+        if not training:
+            self.output = inputs.copy()
+            return
+
         # Generate and save scaled mask
         self.binary_mask = np.random.binomial(1, self.rate,
                                               size=inputs.shape) / self.rate
@@ -114,3 +125,21 @@ class LayerDropout:
         """
         # Gradient on values
         self.dinputs = dvalues * self.binary_mask
+
+
+class LayerInput:
+    """Class to represent an input layer in a neural network.
+    This is considered a layer in a neural network but doesn’t
+    have weights and biases associated with it. The input layer only
+    contains the training data, and we’ll only use it as a “previous”
+    layer to the first layer during the iteration of the layers in a loop"""
+
+    def forward(self, inputs, training):
+        """Passes the inputs forward.
+
+        Args:
+            inputs (np.array): Inputs to the layer.
+            training (bool): Flag indicating whether the model is in
+                training
+        """
+        self.output = inputs

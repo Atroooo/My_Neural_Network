@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import nnfs
 from nnfs.datasets import vertical_data, spiral_data

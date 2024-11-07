@@ -5,21 +5,35 @@ from activation_functions import ActivationSoftmax
 class Loss:
     """Class to represent the loss function."""
 
-    def calculate(self, output, y):
+    def remember_trainable_layers(self, trainable_layers):
+        """Sets/remembers the trainable layers for the loss function.
+
+        Args:
+            trainable_layers (array): Trainable layers.
+        """
+        self.trainable_layers = trainable_layers
+
+    def calculate(self, output, y, *, include_regularization=False):
         """Calculates the loss between the predicted and true values.
 
         Args:
             output (np.array): Predicted values.
             y (np.array): True values.
+            include_regularization (bool, optional): Whether to include
 
         Returns:
             np.array: Loss values.
         """
         sample_losses = self.forward(output, y)
         data_loss = np.mean(sample_losses)
-        return data_loss
 
-    def regularization_loss(self, layer):
+        # If just data loss - return it
+        if not include_regularization:
+            return data_loss
+
+        return data_loss, self.regularization_loss()
+
+    def regularization_loss(self):
         """Calculates the regularization loss for the layer.
 
         Args:
@@ -31,25 +45,28 @@ class Loss:
         # 0 by default
         regularization_loss = 0
 
-        # L1 regularization - weights
-        if layer.weight_regularizer_l1 > 0:
-            regularization_loss += layer.weight_regularizer_l1 * \
-                np.sum(np.abs(layer.weights))
+        for layer in self.trainable_layers:
 
-        # L2 regularization - weights
-        if layer.weight_regularizer_l2 > 0:
-            regularization_loss += layer.weight_regularizer_l2 * \
-                np.sum(layer.weights * layer.weights)
+            # L1 regularization - weights
+            if layer.weight_regularizer_l1 > 0:
+                regularization_loss += layer.weight_regularizer_l1 * \
+                            np.sum(np.abs(layer.weights))
 
-        # L1 regularization - biases
-        if layer.bias_regularizer_l1 > 0:
-            regularization_loss += layer.bias_regularizer_l1 * \
-                np.sum(np.abs(layer.biases))
+            # L2 regularization - weights
+            if layer.weight_regularizer_l2 > 0:
+                regularization_loss += layer.weight_regularizer_l2 * \
+                            np.sum(layer.weights *
+                                   layer.weights)
+            # L1 regularization - biases
+            if layer.bias_regularizer_l1 > 0:
+                regularization_loss += layer.bias_regularizer_l1 * \
+                            np.sum(np.abs(layer.biases))
 
-        # L2 regularization - biases
-        if layer.bias_regularizer_l2 > 0:
-            regularization_loss += layer.bias_regularizer_l2 * \
-                np.sum(layer.biases * layer.biases)
+            # L2 regularization - biases
+            if layer.bias_regularizer_l2 > 0:
+                regularization_loss += layer.bias_regularizer_l2 * \
+                            np.sum(layer.biases *
+                                   layer.biases)
 
         return regularization_loss
 
@@ -115,12 +132,12 @@ class ActivationSoftmaxLossCategoricalCrossentropy():
     """Softmax classifier - combined Softmax activation
         and cross-entropy loss for faster backward step."""
 
-    def __init__(self):
+    def __init__(self):  # Not needed for the model class
         """Creates a combined activation and loss function object."""
         self.activation = ActivationSoftmax()
         self.loss = LossCategoricalCrossentropy()
 
-    def forward(self, inputs, y_true):
+    def forward(self, inputs, y_true):  # Not needed for the model class
         """Performs a forward pass of the combined activation and
             loss function.
 
@@ -206,7 +223,6 @@ class LossBinaryCrossentropy(Loss):
 class LossMeanSquaredError(Loss):
     """Class to represent the mean squared error loss function. (L2 loss)"""
 
-    # Forward pass
     def forward(self, y_pred, y_true):
         """Calculates the mean squared error loss between the predicted
             and true values.
@@ -221,7 +237,6 @@ class LossMeanSquaredError(Loss):
         sample_losses = np.mean((y_true - y_pred)**2, axis=-1)
         return sample_losses
 
-    # Backward pass
     def backward(self, dvalues, y_true):
         """Backpropagates the gradient of the loss function.
 
@@ -242,7 +257,6 @@ class LossMeanSquaredError(Loss):
 class Loss_MeanAbsoluteError(Loss):
     """Class to represent the mean absolute error loss function. (L1 loss)"""
 
-    # Forward pass
     def forward(self, y_pred, y_true):
         """Calculates the mean absolute error loss between the predicted
 
@@ -258,7 +272,6 @@ class Loss_MeanAbsoluteError(Loss):
         # Return losses
         return sample_losses
 
-    # Backward pass
     def backward(self, dvalues, y_true):
         """Backpropagates the gradient of the loss function.
 

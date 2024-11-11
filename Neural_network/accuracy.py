@@ -4,12 +4,43 @@ import numpy as np
 class Accuracy:
     """Class that calculates accuracy."""
     def calculate(self, predictions, y):
+        """Calculates accuracy based on the predictions and
+        the ground truth values.
+
+        Args:
+            predictions (np.array): Predictions made by the model.
+            y (np.array): Ground truth values.
+
+        Returns:
+            float: Accuracy value.
+        """
         # Get comparison results
         comparisons = self.compare(predictions, y)
+
         # Calculate an accuracy
         accuracy = np.mean(comparisons)
-        # Return accuracy
+
+        # Add accumulated sum of matching values and sample count
+        self.accumulated_sum += np.sum(comparisons)
+        self.accumulated_count += len(comparisons)
+
         return accuracy
+
+    def calculate_accumulated(self):
+        """Calculates accumulated accuracy based on the accumulated sum and
+        count of the samples.
+
+        Returns:
+            float: Accumulated accuracy value.
+        """
+        # Calculate an accuracy
+        accuracy = self.accumulated_sum / self.accumulated_count
+        return accuracy
+
+    def new_pass(self):
+        """Resets the accumulated sum and count of the samples."""
+        self.accumulated_sum = 0
+        self.accumulated_count = 0
 
 
 class AccuracyRegression(Accuracy):

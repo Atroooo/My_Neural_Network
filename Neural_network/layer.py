@@ -39,6 +39,7 @@ class LayerDense:
                 training
         """
         self.inputs = inputs
+
         # Calculate output values from inputs, weights and biases
         self.output = np.dot(inputs, self.weights) + self.biases
 

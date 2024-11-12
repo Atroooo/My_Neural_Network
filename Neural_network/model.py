@@ -128,12 +128,14 @@ class Model:
             # on the combined activation/loss
             # this will set dinputs property
             self.softmax_classifier_output.backward(output, y)
+
             # Since we'll not call backward method of the last layer
             # which is Softmax activation
             # as we used combined activation/loss
             # object, let's set dinputs in this object
             self.layers[-1].dinputs = \
                 self.softmax_classifier_output.dinputs
+
             # Call backward method going through
             # all the objects but last
             # in reversed order passing dinputs as a parameter
@@ -409,6 +411,7 @@ class Model:
         with open(path, 'wb') as f:
             pickle.dump(model, f)
 
+    @staticmethod
     def load(path):
         """Load the model from a file.
 

@@ -3,6 +3,7 @@ import numpy as np
 
 class Accuracy:
     """Class that calculates accuracy."""
+
     def calculate(self, predictions, y):
         """Calculates accuracy based on the predictions and
         the ground truth values.
@@ -86,8 +87,7 @@ class AccuracyCategorical(Accuracy):
         """
         self.binary = binary
 
-    # No initialization is needed
-    def init(self, y):
+    def init(self, y):  # No initialization is needed
         pass
 
     def compare(self, predictions, y):

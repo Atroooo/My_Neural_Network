@@ -61,6 +61,7 @@ class OptimizerSGD:
                 layer.dweights
             bias_updates = -self.current_learning_rate * \
                 layer.dbiases
+
         # Update weights and biases using either vanilla or momentum updates
         layer.weights += weight_updates
         layer.biases += bias_updates
@@ -73,6 +74,7 @@ class OptimizerSGD:
 
 class OptimizerAdagrad:
     """Adaptive Gradient optimizer. Built on the SGD optimizer."""
+
     def __init__(self, learning_rate=1., decay=0., epsilon=1e-7):
         """Initializes the optimizer with the given learning rate, decay and
         epsilon.
@@ -193,6 +195,7 @@ class OptimizerRMSprop:
 
 class OptimizerAdam:
     """Adam optimizer. Built on RMSprop and Momentum optimizers."""
+
     def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7,
                  beta_1=0.9, beta_2=0.999):
         """Initializes the optimizer with the given learning rate, dacay,

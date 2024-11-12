@@ -138,6 +138,7 @@ class LossCategoricalCrossentropy(Loss):
         """
         # Number of samples
         samples = len(dvalues)
+
         # Number of labels in every sample
         labels = len(dvalues[0])
 
@@ -194,6 +195,7 @@ class ActivationSoftmaxLossCategoricalCrossentropy():
         self.dinputs = dvalues.copy()
         # Calculate gradient
         self.dinputs[range(samples), y_true] -= 1
+
         # Normalize gradient
         self.dinputs = self.dinputs / samples
 
@@ -274,6 +276,7 @@ class LossMeanSquaredError(Loss):
 
         # Gradient on values
         self.dinputs = -2 * (y_true - dvalues) / outputs
+
         # Normalize gradient
         self.dinputs = self.dinputs / samples
 
@@ -293,7 +296,6 @@ class Loss_MeanAbsoluteError(Loss):
         """
         # Calculate loss
         sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
-        # Return losses
         return sample_losses
 
     def backward(self, dvalues, y_true):
@@ -309,5 +311,6 @@ class Loss_MeanAbsoluteError(Loss):
 
         # Calculate gradient
         self.dinputs = np.sign(y_true - dvalues) / outputs
+
         # Normalize gradient
         self.dinputs = self.dinputs / samples

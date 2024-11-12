@@ -1,3 +1,6 @@
+import pickle
+import copy
+import numpy as np
 from layer import LayerInput
 from activation_functions import ActivationSoftmax
 from loss_functions import LossCategoricalCrossentropy, \
@@ -22,17 +25,22 @@ class Model:
         """
         self.layers.append(layer)
 
-    def set(self, *, loss, optimizer, accuracy):
+    def set(self, *, loss=None, optimizer=None, accuracy=None):
         """Sets the loss function, optimizer and accuracy for the model.
 
         Args:
-            loss (Loss): Loss function to use.
-            optimizer (Optimizer): Optimizer to use.
-            accuracy (Accuracy): Accuracy object to use.
+            loss (Loss): Loss function to use. Defaults to None.
+            optimizer (Optimizer): Optimizer to use. Defaults to None.
+            accuracy (Accuracy): Accuracy object to use. Defaults to None.
         """
-        self.loss = loss
-        self.optimizer = optimizer
-        self.accuracy = accuracy
+        if loss is not None:
+            self.loss = loss
+
+        if optimizer is not None:
+            self.optimizer = optimizer
+
+        if accuracy is not None:
+            self.accuracy = accuracy
 
     def finalize(self):
         """Finalizes the model by setting up all the connections
@@ -71,7 +79,8 @@ class Model:
                 self.trainable_layers.append(self.layers[i])
 
         # Update loss object with trainable layers
-        self.loss.remember_trainable_layers(self.trainable_layers)
+        if self.loss is not None:
+            self.loss.remember_trainable_layers(self.trainable_layers)
 
         # If output activation is Softmax and
         # loss function is Categorical Cross-Entropy
@@ -160,13 +169,6 @@ class Model:
         # Default value if batch size is not being set
         train_steps = 1
 
-        # If there is validation data passed,
-        # set default number of steps for validation as well
-        if validation_data is not None:
-            validation_steps = 1
-
-            X_val, y_val = validation_data
-
         # Calculate number of steps
         if batch_size is not None:
             # Dividing rounds down.
@@ -174,13 +176,6 @@ class Model:
             if train_steps * batch_size < len(X):
                 # Add `1` to include this not full batch
                 train_steps += 1
-
-        if validation_data is not None:
-            # Dividing rounds down.
-            validation_steps = len(X_val) // batch_size
-            if validation_steps * batch_size < len(X_val):
-                # Add `1` to include this not full batch
-                validation_steps += 1
 
         # Main training loop
         for epoch in range(1, epochs+1):
@@ -251,38 +246,180 @@ class Model:
 
         # If there is the validation data
         if validation_data is not None:
+            self.evaluate(*validation_data, batch_size=batch_size)
 
-            # Reset accumulated values in loss
-            # and accuracy objects
-            self.loss.new_pass()
-            self.accuracy.new_pass()
+    def evaluate(self, X_val, y_val, *, batch_size=None):
+        """Evaluates the model on the given data.
 
-            # Iterate over steps
-            for step in range(validation_steps):
+        Args:
+            X_val (ndarray): Input data.
+            y_val (ndarray): Target data.
+            batch_size (int): Number of samples in a batch.
+        """
+        validation_steps = 1
 
-                if batch_size is None:
-                    batch_X = X_val
-                    batch_y = y_val
-                else:
-                    batch_X = X_val[step*batch_size:(step+1)*batch_size]
-                    batch_y = y_val[step*batch_size:(step+1)*batch_size]
+        # Calculate number of steps
+        if batch_size is not None:
+            validation_steps = len(X_val) // batch_size
+            if validation_steps * batch_size < len(X_val):
+                validation_steps += 1
 
-                # Perform the forward pass
-                output = self.forward(batch_X, training=False)
+        # Reset accumulated values in loss
+        # and accuracy objects
+        self.loss.new_pass()
+        self.accuracy.new_pass()
 
-                # Calculate the loss
-                self.loss.calculate(output, batch_y)
+        # Iterate over steps
+        for step in range(validation_steps):
 
-                # Get predictions and calculate an accuracy
-                predictions = self.output_layer_activation.predictions(
-                                output)
-                self.accuracy.calculate(predictions, batch_y)
+            if batch_size is None:
+                batch_X = X_val
+                batch_y = y_val
+            else:
+                batch_X = X_val[step*batch_size:(step+1)*batch_size]
+                batch_y = y_val[step*batch_size:(step+1)*batch_size]
 
-            # Get and print validation loss and accuracy
-            validation_loss = self.loss.calculate_accumulated()
-            validation_accuracy = self.accuracy.calculate_accumulated()
+            # Perform the forward pass
+            output = self.forward(batch_X, training=False)
 
-            # Print a summary
-            print('validation, ' +
-                  f'acc: {validation_accuracy:.3f}, ' +
-                  f'loss: {validation_loss:.3f}')
+            # Calculate the loss
+            self.loss.calculate(output, batch_y)
+
+            # Get predictions and calculate an accuracy
+            predictions = self.output_layer_activation.predictions(
+                            output)
+            self.accuracy.calculate(predictions, batch_y)
+
+        # Get and print validation loss and accuracy
+        validation_loss = self.loss.calculate_accumulated()
+        validation_accuracy = self.accuracy.calculate_accumulated()
+
+        # Print a summary
+        print('validation, ' +
+              f'acc: {validation_accuracy:.3f}, ' +
+              f'loss: {validation_loss:.3f}')
+
+    def predict(self, X, *, batch_size=None):
+        """Predicts the output of the model on the given data.
+
+        Args:
+            X (np.array): Input data.
+            batch_size (int): Number of samples in a batch.
+
+        Returns:
+            np.vstack: Predictions.
+        """
+        # Default value if batch size is not being set
+        prediction_steps = 1
+
+        # Calculate number of steps
+        if batch_size is not None:
+            prediction_steps = len(X) // batch_size
+            if prediction_steps * batch_size < len(X):
+                prediction_steps += 1
+
+        output = []
+
+        # Iterate over steps
+        for step in range(prediction_steps):
+
+            if batch_size is None:
+                batch_X = X
+            else:
+                batch_X = X[step*batch_size:(step+1)*batch_size]
+
+            # Perform the forward pass
+            batch_output = self.forward(batch_X, training=False)
+
+            # Append batch prediction to the list of predictions
+            output.append(batch_output)
+
+        return np.vstack(output)
+
+    def get_parameters(self):
+        """Get the model parameters.
+
+        Returns:
+            dict: Dictionary containing the parameters.
+        """
+        # Create a list for parameters
+        parameters = []
+
+        # Iterate trainable layers and get their parameters
+        for layer in self.trainable_layers:
+            parameters.append(layer.get_parameters())
+
+        # Return a dictionary
+        return parameters
+
+    def set_parameters(self, parameters):
+        """Set the model parameters.
+
+        Args:
+            parameters (dict): Dictionary containing the parameters.
+        """
+        # Iterate over the parameters and layers
+        for parameter_set, layer in zip(parameters,
+                                        self.trainable_layers):
+            layer.set_parameters(*parameter_set)
+
+    def save_parameters(self, path):
+        """Save the model parameters to a file.
+
+        Args:
+            path (str): Path to the file.
+        """
+        with open(path, 'wb') as f:
+            pickle.dump(self.get_parameters(), f)
+
+    def load_parameters(self, path):
+        """Load the model parameters from a file.
+
+        Args:
+            path (str): Path to the file.
+        """
+        with open(path, 'rb') as f:
+            self.set_parameters(pickle.load(f))
+
+    def save(self, path):
+        """Save the model to a file.
+
+        Args:
+            path (str): Path to the file.
+        """
+        # Make a deep copy of current model instance
+        model = copy.deepcopy(self)
+
+        # Reset accumulated values in loss and accuracy objects
+        model.loss.new_pass()
+        model.accuracy.new_pass()
+
+        # Remove data from input layer
+        # and gradients from the loss object
+        model.input_layer.__dict__.pop('output', None)
+        model.loss.__dict__.pop('dinputs', None)
+
+        # For each layer remove inputs, output and dinputs properties
+        for layer in model.layers:
+            for property in ['inputs', 'output', 'dinputs',
+                             'dweights', 'dbiases']:
+                layer.__dict__.pop(property, None)
+
+        # Open a file in the binary-write mode and save the model
+        with open(path, 'wb') as f:
+            pickle.dump(model, f)
+
+    def load(path):
+        """Load the model from a file.
+
+        Args:
+            path (str): Path to the file.
+
+        Returns:
+            Model: Model instance.
+        """
+        # Open file in the binary-read mode, load the model and return it
+        with open(path, 'rb') as f:
+            model = pickle.load(f)
+
+        return model

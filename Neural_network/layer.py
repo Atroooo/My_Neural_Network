@@ -79,6 +79,20 @@ class LayerDense:
         # Gradient on values
         self.dinputs = np.dot(dvalues, self.weights.T)
 
+    def get_parameters(self):
+        """Returns the weights and biases of the layer."""
+        return self.weights, self.biases
+
+    def set_parameters(self, weights, biases):
+        """Sets the weights and biases of the layer.
+
+        Args:
+            weights (np.array): Weights to set.
+            biases (np.array): Biases to set.
+        """
+        self.weights = weights
+        self.biases = biases
+
 
 class LayerDropout:
     """Class to represent a dropout layer in a neural network.

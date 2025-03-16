@@ -20,11 +20,6 @@ test_real_data.py being the latest test.
 
 ### Sources used :
 
-NNFS Tutorial   
-- https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
-
-NNFS Book       
-- https://nnfs.io/
-
-Inside ML       
-- https://inside-machinelearning.com/recall-precision-f1-score/
+- NNFS Tutorial: https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
+- NNFS Book: https://nnfs.io/
+- Inside ML: https://inside-machinelearning.com/recall-precision-f1-score/

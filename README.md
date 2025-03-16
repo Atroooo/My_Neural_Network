@@ -4,6 +4,10 @@ The aim of this project is to learn how different a neural network and other alg
 ### To run the project:
 
 ```bash
+git clone https://github.com/Atroooo/My_Neural_Network.git
+cd My_Neural_Network
+```
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install numpy

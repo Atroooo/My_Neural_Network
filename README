@@ -1,8 +1,22 @@
-Neural Network from scratch using Python and Numpy
-I'll re-implement some algorithm from scratch as well.
-This project is here to help me to learn how it's working, the parameters... and understand the math behind it.
+My own implementation of a neural Network from scratch using Python and Numpy
+The aim of this project is to learn how different a neural network and other algoritmhs are working. 
 
-Sources :
+Sources used :
 NNFS Tutorial   - https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
 NNFS Book       - https://nnfs.io/
 Inside ML       - https://inside-machinelearning.com/recall-precision-f1-score/
+
+To run the project:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install numpy
+pip install nnfs
+```
+
+When it's done, all the test file are contained in Neural_network/tests. To try them out just move them into the Neural_network and run them as follow:
+```bash
+python test.py
+```
+
+test_real_data.py being the latest test.

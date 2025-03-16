@@ -12,6 +12,7 @@ pip install nnfs
 
 When it's done, all the test file are contained in Neural_network/tests. To try them out just move them into the Neural_network and run them as follow:
 ```bash
+cd Neural_network
 python test.py
 ```
 

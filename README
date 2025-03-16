@@ -6,7 +6,8 @@ NNFS Tutorial   - https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDc
 NNFS Book       - https://nnfs.io/
 Inside ML       - https://inside-machinelearning.com/recall-precision-f1-score/
 
-To run the project:
+### To run the project:
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate

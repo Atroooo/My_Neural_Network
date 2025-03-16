@@ -1,17 +1,6 @@
 My own implementation of a neural Network from scratch using Python and Numpy
 The aim of this project is to learn how different a neural network and other algoritmhs are working. 
 
-Sources used :
-
-NNFS Tutorial   
-- https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
-
-NNFS Book       
-- https://nnfs.io/
-
-Inside ML       
-- https://inside-machinelearning.com/recall-precision-f1-score/
-
 ### To run the project:
 
 ```bash
@@ -27,3 +16,15 @@ python test.py
 ```
 
 test_real_data.py being the latest test.
+
+
+### Sources used :
+
+NNFS Tutorial   
+- https://www.youtube.com/watch?v=Wo5dMEP_BbI&list=PLQVvvaa0QuDcjD5BAw2DxE6OF2tius3V3&index=2
+
+NNFS Book       
+- https://nnfs.io/
+
+Inside ML       
+- https://inside-machinelearning.com/recall-precision-f1-score/
